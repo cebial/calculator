@@ -10,7 +10,7 @@ object Calculator {
 
     // all supported operations as functions
     private val applyOperator = mapOf(
-        "+" to { a: Int, b: Int -> a + b
+        "+" to { a: Int, b: Int -> a + b },
         "-" to { a: Int, b: Int -> a - b },
         "*" to { a: Int, b: Int -> a * b },
         "/" to { a: Int, b: Int -> a / b },
@@ -97,7 +97,7 @@ object Calculator {
 
                 // a) pop all the operators from the stack which are greater than or equal to in precedence than that of
                 // the scanned operator. Then b) push the scanned operator to the stack. If we find parentheses while
-                // popping, then stop and push the scanned operator in the stack.
+                // popping, then stop and push the scanned operator on the stack.
                 else -> {
                     while (stack.size > 0) {
                         if (hasPrecedence(op, stack.last())) break
