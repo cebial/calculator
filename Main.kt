@@ -10,7 +10,7 @@ object Calculator {
 
     // all supported operations as functions
     private val applyOperator = mapOf(
-        "+" to { a: Int, b: Int -> a + b },
+        "+" to { a: Int, b: Int -> a + b
         "-" to { a: Int, b: Int -> a - b },
         "*" to { a: Int, b: Int -> a * b },
         "/" to { a: Int, b: Int -> a / b },
@@ -71,62 +71,50 @@ object Calculator {
             .trim().split(Regex("\\s+"))
 
         scanner@ for (op in infix) {
-            // if the scanned character is an operand, append it to the postfix string
-            if (isNum(op) || isVarName(op)) {
-                postfix += op
-                continue
-            }
+            when {
+                // if the scanned character is an operand, append it to the postfix string
+                isNum(op) || isVarName(op) -> postfix += op
 
-            // left parentheses are always pushed onto the stack
-            if (op == "(") {
-                stack += op
-                continue
-            }
+                // left parentheses are always pushed onto the stack
+                op == "(" -> stack += op
 
-            // when a right parenthesis is encountered, the symbol on the top of the stack is popped off the stack and
-            // copied to the output. This process repeats until the top of the stack is a left parenthesis. When that
-            // occurs, both parentheses are discarded.
-            if (op == ")") {
-                while (stack.size > 0) {
-                    val op2 = stack.removeLast()
-                    if (op2 == "(") continue@scanner
-                    postfix += op2
+                // right parenthesis encountered? pop an operator of the stack and copy to the output, repeat this
+                // until the top of the stack is a left parenthesis, then discard both parentheses
+                op == ")" -> {
+                    while (stack.size > 0) {
+                        val op2 = stack.removeLast()
+                        if (op2 == "(") continue@scanner
+                        postfix += op2
+                    }
+
+                    // if stack is empty here, parentheses were unbalanced
+                    if (stack.size == 0) { postfix.clear(); break@scanner }
                 }
 
-                // if stack is empty here, parentheses were unbalanced
-                if (stack.size == 0) {
-                    postfix.clear()
-                    break
+                // if a) precedence of the scanned operator is greater than the precedence order of the operator
+                // on the stack, or b) the stack is empty or c) the stack contains a ‘(‘ , push it on the stack.
+                stack.isEmpty() || stack.last() == "(" || hasPrecedence(op, stack.last()) -> stack += op
+
+                // a) pop all the operators from the stack which are greater than or equal to in precedence than that of
+                // the scanned operator. Then b) push the scanned operator to the stack. If we find parentheses while
+                // popping, then stop and push the scanned operator in the stack.
+                else -> {
+                    while (stack.size > 0) {
+                        if (hasPrecedence(op, stack.last())) break
+                        val op2 = stack.removeLast()
+                        if (op2 == "(") break
+                        postfix += op2
+                    }
+                    stack += op
                 }
             }
-
-            // a) if the precedence order of the scanned operator is greater than the precedence order of the operator
-            // on the stack, or b) the stack is empty or c) the stack contains a ‘(‘ , push it on the stack.
-            if (stack.isEmpty() || stack.last() == "(" || hasPrecedence(op, stack.last())) {
-                stack += op
-                continue
-            }
-
-            // a) pop all the operators from the stack which are greater than or equal to in precedence than that of the
-            // scanned operator. After doing that b) push the scanned operator to the stack. (If you encounter
-            // parentheses while popping, then stop there and push the scanned operator in the stack.)
-            while (stack.size > 0) {
-                if (hasPrecedence(op, stack.last())) break
-                val op2 = stack.removeLast()
-                if (op2 == "(") break
-                postfix += op2
-            }
-            stack += op
         }
 
         // at the end of the expression, pop the stack and add all operators to the result.
         while (stack.size > 0) {
             val op2 = stack.removeLast()
             // if we encounter a left parenthesis here, parentheses were unbalanced
-            if (op2 == "(") {
-                postfix.clear()
-                break
-            }
+            if (op2 == "(") { postfix.clear(); break }
             postfix += op2
         }
 
@@ -134,9 +122,9 @@ object Calculator {
     }
 
     fun processInput(s: String) {
-        if (s[0] == '/') { println("Unknown command"); return }
-
         when {
+            s == "/help" -> println("I will do your math homework.")
+            s[0] == '/' -> println("Unknown command")
             '=' in s -> performAssignment(s)
             s in vars -> println(vars[s])
             isVarName(s) -> println("Unknown variable")
@@ -148,12 +136,9 @@ object Calculator {
 fun main() {
     while (true) {
         when (val s = readln()) {
-//        when (val s = "((1 + 2) + 3) + 4") {
             "" -> continue
             "/exit" -> break
-            "/help" -> println("I will do your math homework.")
             else -> Calculator.processInput(s.trim())
-//            else -> { Calculator.processInput(s.trim()); return }
         }
     }
     println("Bye!")
