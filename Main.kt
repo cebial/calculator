@@ -25,7 +25,7 @@ object Calculator {
 
         // create the postfix expression (or exit here if parentheses are unbalanced)
         val postfix = convertInfixToPostfix(s)
-        if (postfix.size == 0) {
+        if (postfix.isEmpty()) {
             println("Invalid Expression"); return
         }
 
@@ -36,9 +36,9 @@ object Calculator {
                 isNum(op) -> stack += op
                 isVar(op) -> stack += vars[op]!!
                 else -> {
-                    val a = stack.removeLast().toBigInteger()
-                    val b = stack.removeLast().toBigInteger()
-                    stack.add(applyOperator[op]!!(b, a).toString())
+                    val op2 = stack.removeLast().toBigInteger()
+                    val op1 = stack.removeLast().toBigInteger()
+                    stack.add(applyOperator[op]!!(op1, op2).toString())
                 }
             }
         }
@@ -75,49 +75,49 @@ object Calculator {
         scanner@ for (op in infix) {
             when {
                 // if the scanned character is an operand, append it to the postfix string
-                isNum(op) || isVar(op) -> postfix += op
+                isNum(op) || isVar(op) -> postfix.add(op)
 
                 // left parentheses are always pushed onto the stack
-                op == "(" -> stack += op
+                op == "(" -> stack.add(op)
 
                 // right parenthesis encountered? pop an operator of the stack and copy to the output, repeat this
                 // until the top of the stack is a left parenthesis, then discard both parentheses
                 op == ")" -> {
-                    while (stack.size > 0) {
+                    while (stack.isNotEmpty()) {
                         val op2 = stack.removeLast()
                         if (op2 == "(") continue@scanner
-                        postfix += op2
+                        postfix.add(op2)
                     }
 
                     // if stack is empty here, parentheses were unbalanced
-                    if (stack.size == 0) { postfix.clear(); break@scanner }
+                    if (stack.isEmpty()) { postfix.clear(); break@scanner }
                 }
 
                 // if a) precedence of the scanned operator is greater than the precedence order of the operator
                 // on the stack, or b) the stack is empty or c) the stack contains a ‘(‘ , push it on the stack.
-                stack.isEmpty() || stack.last() == "(" || hasPrecedence(op, stack.last()) -> stack += op
+                stack.isEmpty() || stack.last() == "(" || hasPrecedence(op, stack.last()) -> stack.add(op)
 
                 // a) pop all the operators from the stack which are greater than or equal to in precedence than that of
                 // the scanned operator. Then b) push the scanned operator to the stack. If we find parentheses while
                 // popping, then stop and push the scanned operator on the stack.
                 else -> {
-                    while (stack.size > 0) {
+                    while (stack.isNotEmpty()) {
                         if (hasPrecedence(op, stack.last())) break
                         val op2 = stack.removeLast()
                         if (op2 == "(") break
-                        postfix += op2
+                        postfix.add(op2)
                     }
-                    stack += op
+                    stack.add(op)
                 }
             }
         }
 
         // at the end of the expression, pop the stack and add all operators to the result.
-        while (stack.size > 0) {
+        while (stack.isNotEmpty()) {
             val op2 = stack.removeLast()
             // if we encounter a left parenthesis here, parentheses were unbalanced
             if (op2 == "(") { postfix.clear(); break }
-            postfix += op2
+            postfix.add(op2)
         }
 
         return postfix
@@ -126,7 +126,7 @@ object Calculator {
     fun processInput(s: String) {
         when {
             s == "/help" -> println("I will do your math homework.")
-            s[0] == '/' -> println("Unknown command")
+            s.first() == '/' -> println("Unknown command")
             '=' in s -> performAssignment(s)
             s in vars -> println(vars[s])
             isVar(s) -> println("Unknown variable")
