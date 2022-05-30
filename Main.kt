@@ -6,10 +6,6 @@ object Calculator {
     private fun isNum(string: String) = string.toBigIntegerOrNull() != null
     private fun isVar(name: String) = name.matches(Regex("[a-zA-Z]+"))
 
-    // return a list with numbers and single character operations only
-    private fun formatExpression(s: String): String =
-        s.replace("--", "+").replace(Regex("\\++"), "+").replace("+-", "-")
-
     // all supported operations as functions
     private val applyOperator = mapOf(
         "+" to { a: BigInteger, b: BigInteger -> a + b },
@@ -29,7 +25,7 @@ object Calculator {
 
         // create the postfix expression (or exit here if parentheses are unbalanced)
         val postfix = convertInfixToPostfix(s)
-        if (postfix.size == 0 ) {
+        if (postfix.size == 0) {
             println("Invalid Expression"); return
         }
 
@@ -56,21 +52,25 @@ object Calculator {
 
         when {
             !isVar(parts[0]) -> println("Invalid identifier")
-            (!isNum(parts[1]) && !isVar(parts[1])) || parts.size > 2  -> println("Invalid assignment")
+            (!isNum(parts[1]) && !isVar(parts[1])) || parts.size > 2 -> println("Invalid assignment")
             !isNum(parts[1]) && parts[1] !in vars -> println("Unknown variable")
             isNum(parts[1]) -> vars[parts[0]] = parts[1]
             else -> vars[parts[0]] = vars[parts[1]]!!
         }
     }
 
+    // used by convertInfixToPostfix to compare operators by precedence
     private fun hasPrecedence(op: String, op2: String) = (op in "*/" && op2 !in "*/") || (op in "+-" && op2 == "(")
 
-    private fun convertInfixToPostfix(s: String) : MutableList<String> {
+    private fun convertInfixToPostfix(s: String): MutableList<String> {
         val stack = mutableListOf<String>()
         val postfix = mutableListOf<String>()
 
-        val infix = formatExpression(s).replace(Regex("\\s*([+*/()]|-(?!\\d))\\s*")," $1 ")
-            .trim().split(Regex("\\s+"))
+        val infix = s.replace("--", "+") // get rid of double minuses
+            .replace(Regex("\\++"), "+") // and multiple pluses
+            .replace("+-", "-") // and redundant pluses in front of minuses
+            .replace(Regex("\\s*([+*/()]|-(?!\\d))\\s*"), " $1 ") // ensure spacing around operators
+            .trim().split(Regex("\\s+")) // split into operands and operators
 
         scanner@ for (op in infix) {
             when {
