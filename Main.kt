@@ -4,7 +4,7 @@ import java.math.BigInteger
 
 object Calculator {
     private fun isNum(string: String) = string.toBigIntegerOrNull() != null
-    private fun isVarName(name: String) = name.matches(Regex("[a-zA-Z]+"))
+    private fun isVar(name: String) = name.matches(Regex("[a-zA-Z]+"))
 
     // return a list with numbers and single character operations only
     private fun formatExpression(s: String): String =
@@ -38,7 +38,7 @@ object Calculator {
         for (op in postfix) {
             when {
                 isNum(op) -> stack += op
-                isVarName(op) -> stack += vars[op]!!
+                isVar(op) -> stack += vars[op]!!
                 else -> {
                     val a = stack.removeLast().toBigInteger()
                     val b = stack.removeLast().toBigInteger()
@@ -55,8 +55,8 @@ object Calculator {
         val parts = s.split(Regex("\\s*=\\s*"))
 
         when {
-            !isVarName(parts[0]) -> println("Invalid identifier")
-            (!isNum(parts[1]) && !isVarName(parts[1])) || parts.size > 2  -> println("Invalid assignment")
+            !isVar(parts[0]) -> println("Invalid identifier")
+            (!isNum(parts[1]) && !isVar(parts[1])) || parts.size > 2  -> println("Invalid assignment")
             !isNum(parts[1]) && parts[1] !in vars -> println("Unknown variable")
             isNum(parts[1]) -> vars[parts[0]] = parts[1]
             else -> vars[parts[0]] = vars[parts[1]]!!
@@ -75,7 +75,7 @@ object Calculator {
         scanner@ for (op in infix) {
             when {
                 // if the scanned character is an operand, append it to the postfix string
-                isNum(op) || isVarName(op) -> postfix += op
+                isNum(op) || isVar(op) -> postfix += op
 
                 // left parentheses are always pushed onto the stack
                 op == "(" -> stack += op
@@ -129,7 +129,7 @@ object Calculator {
             s[0] == '/' -> println("Unknown command")
             '=' in s -> performAssignment(s)
             s in vars -> println(vars[s])
-            isVarName(s) -> println("Unknown variable")
+            isVar(s) -> println("Unknown variable")
             else -> performCalculus(s)
         }
     }
