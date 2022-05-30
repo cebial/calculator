@@ -1,7 +1,9 @@
 package calculator
 
+import java.math.BigInteger
+
 object Calculator {
-    private fun isNum(string: String) = string.toIntOrNull() != null
+    private fun isNum(string: String) = string.toBigIntegerOrNull() != null
     private fun isVarName(name: String) = name.matches(Regex("[a-zA-Z]+"))
 
     // return a list with numbers and single character operations only
@@ -10,10 +12,10 @@ object Calculator {
 
     // all supported operations as functions
     private val applyOperator = mapOf(
-        "+" to { a: Int, b: Int -> a + b },
-        "-" to { a: Int, b: Int -> a - b },
-        "*" to { a: Int, b: Int -> a * b },
-        "/" to { a: Int, b: Int -> a / b },
+        "+" to { a: BigInteger, b: BigInteger -> a + b },
+        "-" to { a: BigInteger, b: BigInteger -> a - b },
+        "*" to { a: BigInteger, b: BigInteger -> a * b },
+        "/" to { a: BigInteger, b: BigInteger -> a / b },
     )
 
     // a map to store all variables entered by the user
@@ -32,15 +34,15 @@ object Calculator {
         }
 
         // perform the calculus using the postfix expression
-        val stack = mutableListOf<Int>()
+        val stack = mutableListOf<String>()
         for (op in postfix) {
             when {
-                isNum(op) -> stack += op.toInt()
-                isVarName(op) -> stack += vars[op]!!.toInt()
+                isNum(op) -> stack += op
+                isVarName(op) -> stack += vars[op]!!
                 else -> {
-                    val a = stack.removeLast()
-                    val b = stack.removeLast()
-                    stack.add(applyOperator[op]!!(b, a))
+                    val a = stack.removeLast().toBigInteger()
+                    val b = stack.removeLast().toBigInteger()
+                    stack.add(applyOperator[op]!!(b, a).toString())
                 }
             }
         }
