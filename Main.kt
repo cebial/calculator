@@ -71,13 +71,13 @@ object Calculator {
             .trim().split(Regex("\\s+"))
 
         scanner@ for (op in infix) {
-            // if the scanned character is an operand, append it to Postfix string
+            // if the scanned character is an operand, append it to the postfix string
             if (isNum(op) || isVarName(op)) {
                 postfix += op
                 continue
             }
 
-            // left parentheses are always pushed onto a stack
+            // left parentheses are always pushed onto the stack
             if (op == "(") {
                 stack += op
                 continue
@@ -101,7 +101,7 @@ object Calculator {
             }
 
             // a) if the precedence order of the scanned operator is greater than the precedence order of the operator
-            // on the stack, or b) the stack is empty or c) the stack contains a ‘(‘ , push it on stack.
+            // on the stack, or b) the stack is empty or c) the stack contains a ‘(‘ , push it on the stack.
             if (stack.isEmpty() || stack.last() == "(" || hasPrecedence(op, stack.last())) {
                 stack += op
                 continue
